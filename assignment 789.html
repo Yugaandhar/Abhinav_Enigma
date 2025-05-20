@@ -19,12 +19,12 @@
 
   <script>
  
-  function letterToIndex(ch) {
+  function lToI(ch) {
     return ch.charCodeAt(0) - 'A'.charCodeAt(0);
   }
 
-  function indexToLetter(idx) {
-    return String.fromCharCode((idx + 26) % 26 + 'A'.charCodeAt(0));
+  function iToL(i) {
+    return String.fromCharCode((i + 26) % 26 + 'A'.charCodeAt(0));
   }
 
  // Milestone 7
@@ -34,21 +34,21 @@
       this.offset = 0; // 'A'
     }
 
-    advance() {
+    rotorAdvance() {
       this.offset = (this.offset + 1) % 26;
       return this.offset === 0; 
     }
 
-    encodeForwardIndex(idx) {
-      let shifted = (idx + this.offset) % 26;
+    encodeForward(i) {
+      let shifted = (i + this.offset) % 26;
       let letter = this.permutation[shifted];
-      let outIdx = (letterToIndex(letter) - this.offset + 26) % 26;
+      let outIdx = (lToI(letter) - this.offset + 26) % 26;
       return outIdx;
     }
 
-    encodeBackwardIndex(idx) {
-      let shifted = (idx + this.offset) % 26;
-      let targetLetter = indexToLetter(shifted);
+    encodeBackward(i) {
+      let shifted = (i + this.offset) % 26;
+      let targetLetter = iToL(shifted);
       let pos = this.permutation.indexOf(targetLetter);
       let outIdx = (pos - this.offset + 26) % 26;
       return outIdx;
@@ -62,42 +62,42 @@
   const REFLECTOR = "IXUHFEZDAOMTKQJWNSRLCYPBVG";
 
  
-  let slowRotor = new Rotor(ROTOR_I);
-  let midRotor  = new Rotor(ROTOR_II);
-  let fastRotor = new Rotor(ROTOR_III);
+  let sRotor = new Rotor(ROTOR_I);
+  let mRotor  = new Rotor(ROTOR_II);
+  let fRotor = new Rotor(ROTOR_III);
 
   //Milestone 8
   function encryptLetter(ch) {
-    let idx = letterToIndex(ch);
-    idx = fastRotor.encodeForwardIndex(idx);
-    idx = midRotor.encodeForwardIndex(idx);
-    idx = slowRotor.encodeForwardIndex(idx);
+    let i = lToI(ch);
+    i = fRotor.encodeForward(i);
+    i = mRotor.encodeForward(i);
+    i = sRotor.encodeForward(i);
 
-    let reflectedChar = REFLECTOR[idx];
-    idx = letterToIndex(reflectedChar);
+    let reflectedChar = REFLECTOR[i];
+    i = lToI(reflectedChar);
 
-    idx = slowRotor.encodeBackwardIndex(idx);
-    idx = midRotor.encodeBackwardIndex(idx);
-    idx = fastRotor.encodeBackwardIndex(idx);
+    i = sRotor.encodeBackward(i);
+    i = mRotor.encodeBackward(i);
+    i = fRotor.encodeBackward(i);
 
-    return indexToLetter(idx);
+    return iToL(i);
   }
 
   //Milestone 9
   function pressKey(ch) {
    
-    let carry = fastRotor.advance();
+    let carry = fRotor.rotorAdvance();
     if (carry) {
-      carry = midRotor.advance();
+      carry = mRotor.rotorAdvance();
       if (carry) {
-        slowRotor.advance();
+        sRotor.rotorAdvance();
       }
     }
 
     
-    rotorText[0].text(indexToLetter(slowRotor.offset));
-    rotorText[1].text(indexToLetter(midRotor.offset));
-    rotorText[2].text(indexToLetter(fastRotor.offset));
+    rotorText[0].text(iToL(sRotor.offset));
+    rotorText[1].text(iToL(mRotor.offset));
+    rotorText[2].text(iToL(fRotor.offset));
 
    
     let encrypted = encryptLetter(ch);
